@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наш Клуб Brawl Stars</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lilita+One&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lilita One', cursive, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Экран загрузки */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            background-image: url('images/loading-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-star {
+            width: 250px;
+            height: 250px;
+            margin-bottom: 40px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-star img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Полоска загрузки в стиле Brawl Stars */
+        .progress-wrapper {
+            width: 320px;
+            padding: 8px;
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a3a 100%);
+            border: 4px solid #000;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 0 3px #FFD700,
+                0 8px 0 rgba(0,0,0,0.4),
+                0 15px 30px rgba(0,0,0,0.5);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 28px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 3px solid #000;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    #00cc66 0px,
+                    #00cc66 20px,
+                    #00aa44 20px,
+                    #00aa44 40px
+                );
+            border-right: 3px solid #000;
+            transition: width 0.1s linear;
+            position: relative;
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.3);
+        }
+
+        /* Блестящий эффект на полоске */
+        .progress-bar::after {
+            content: '';            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+            border-radius: 10px 10px 0 0;
+        }
+
+        /* Гем/кристалл на конце полоски */
+        .progress-gem {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #00ffff 0%, #0099cc 100%);
+            border: 3px solid #000;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,255,255,0.6);
+            animation: gemGlow 1s ease-in-out infinite alternate;
+            display: none;
+        }
+
+        .progress-bar.active .progress-gem {
+            display: block;
+        }
+
+        @keyframes gemGlow {
+            from { box-shadow: 0 0 10px rgba(0,255,255,0.6); }
+            to { box-shadow: 0 0 20px rgba(0,255,255,0.9), 0 0 30px rgba(0,200,255,0.6); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 28px;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Основной экран */
+        #main-screen {
+            position: fixed;            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/main-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            display: none;
+            transition: opacity 1s ease-in;
+        }
+
+        #main-screen.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .content {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            max-width: 500px;
+            color: #fff;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        .content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+            animation: slideInLeft 1s ease-out;
+            letter-spacing: 2px;
+        }
+
+        .content p {
+            font-size: 20px;
+            line-height: 1.6;
+            animation: slideInLeft 1s ease-out 0.3s both;
+            font-weight: 500;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);            }
+        }
+
+        .button-wrapper {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        /* Надпись Fun_Clan */
+        .clan-name {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 400;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            letter-spacing: 1px;
+            animation: slideInRight 1s ease-out 0.6s both;
+            opacity: 0.95;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .join-button {
+            width: 250px;
+            height: 80px;
+            background-image: url('images/join-btn.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: slideInRight 1s ease-out 0.6s both, float 3s ease-in-out infinite;
+            filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.4));
+        }
+
+        .join-button:hover {
+            transform: scale(1.1) rotate(-2deg);
+            filter: drop-shadow(6px 6px 0 rgba(0,0,0,0.5));
+        }
+        .join-button:active {
+            transform: scale(1.05);
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.4));
+        }
+
+        /* Кнопка вопроса в стиле Brawl Stars */
+        .info-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border: 5px solid #000;
+            cursor: pointer;
+            font-size: 42px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            box-shadow: 
+                0 8px 0 #000,
+                0 12px 20px rgba(0,0,0,0.4),
+                inset 0 6px 0 rgba(255,255,255,0.4),
+                inset 0 -6px 0 rgba(0,0,0,0.2);
+            transition: all 0.15s ease;
+            animation: slideInRight 1s ease-out 0.8s both, float 3s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            top: 0;
+        }
+
+        .info-button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 12px 0 #000,
+                0 16px 25px rgba(0,0,0,0.5),
+                inset 0 6px 0 rgba(255,255,255,0.4),
+                inset 0 -6px 0 rgba(0,0,0,0.2);
+            top: -4px;
+        }
+
+        .info-button:active {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 
+                0 4px 0 #000,
+                0 6px 10px rgba(0,0,0,0.4),
+                inset 0 6px 0 rgba(255,255,255,0.4),
+                inset 0 -6px 0 rgba(0,0,0,0.2);
+            top: 4px;
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Модальное окно в стиле Brawl Stars */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(180deg, #4A90E2 0%, #2E5C8A 100%);
+            border: 6px solid #000;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 
+                0 0 0 4px #FFD700,                0 0 0 8px #000,
+                0 20px 60px rgba(0,0,0,0.6);
+            transform: scale(0.7) rotate(-3deg);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) rotate(0deg);
+        }
+
+        /* Декоративные углы как в Brawl Stars */
+        .modal-content::before,
+        .modal-content::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            border: 4px solid #000;
+        }
+
+        .modal-content::before {
+            top: -20px;
+            left: -20px;
+            border-radius: 0 0 50% 0;
+        }
+
+        .modal-content::after {
+            bottom: -20px;
+            right: -20px;
+            border-radius: 50% 0 0 0;
+        }
+
+        .modal-content h2 {
+            color: #FFD700;
+            font-size: 36px;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            letter-spacing: 2px;
+        }
+
+        .modal-content p {
+            color: #fff;
+            font-size: 22px;
+            margin: 15px 0;
+            line-height: 1.6;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+        }
+        .modal-content .label {
+            color: #FFD700;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+
+        .modal-content .value {
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+        }
+
+        /* Ссылки Telegram */
+        .tg-link {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 12px 25px;
+            background: linear-gradient(180deg, #0088cc 0%, #006699 100%);
+            border: 4px solid #000;
+            border-radius: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 0 #000, 0 8px 15px rgba(0,0,0,0.4);
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.8);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .tg-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #000, 0 12px 20px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #0099dd 0%, #0077aa 100%);
+        }
+
+        .tg-link:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .tg-link .icon {
+            margin-right: 10px;
+            font-size: 22px;
+        }
+
+        .tg-label {            display: block;
+            font-size: 16px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        .modal-close {
+            margin-top: 25px;
+            padding: 15px 50px;
+            background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
+            border: 5px solid #000;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 6px 0 #000,
+                0 10px 20px rgba(0,0,0,0.4);
+            font-family: 'Lilita One', cursive, sans-serif;
+            text-transform: uppercase;
+        }
+
+        .modal-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 9px 0 #000,
+                0 13px 25px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, #FFE135 0%, #FFB347 100%);
+        }
+
+        .modal-close:active {
+            transform: translateY(3px);
+            box-shadow: 
+                0 3px 0 #000,
+                0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        /* Скроллбар для модального окна */
+        .modal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {            background: #FFD700;
+            border: 2px solid #000;
+            border-radius: 5px;
+        }
+
+        /* ===== ДЕСКТОПНАЯ ВЕРСИЯ ===== */
+        @media (min-width: 1024px) {
+            .content {
+                top: 80px;
+                left: 80px;
+                max-width: 700px;
+            }
+
+            .content h1 {
+                font-size: 72px;
+                margin-bottom: 30px;
+            }
+
+            .content p {
+                font-size: 28px;
+                line-height: 1.8;
+            }
+
+            .button-wrapper {
+                bottom: 80px;
+                right: 80px;
+                gap: 15px;
+            }
+
+            .clan-name {
+                font-size: 32px;
+            }
+
+            .button-container {
+                gap: 30px;
+            }
+
+            .join-button {
+                width: 320px;
+                height: 100px;
+            }
+
+            .info-button {
+                width: 100px;
+                height: 100px;
+                font-size: 52px;
+            }
+
+            .modal-content {
+                padding: 50px;                max-width: 600px;
+            }
+
+            .modal-content h2 {
+                font-size: 44px;
+            }
+
+            .modal-content p {
+                font-size: 26px;
+            }
+
+            .modal-content .value {
+                font-size: 28px;
+            }
+
+            .tg-link {
+                font-size: 20px;
+                padding: 15px 30px;
+            }
+        }
+
+        /* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+        @media (max-width: 768px) {
+            .content {
+                top: 30px;
+                left: 20px;
+                right: 20px;
+            }
+            .content h1 { font-size: 36px; }
+            .content p { font-size: 18px; }
+            
+            .button-wrapper {
+                bottom: 30px;
+                right: 50%;
+                transform: translateX(50%);
+                align-items: center;
+            }
+
+            .clan-name {
+                font-size: 22px;
+                order: -1;
+            }
+
+            .button-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .join-button {
+                width: 220px;                height: 70px;
+            }
+
+            .info-button {
+                width: 70px;
+                height: 70px;
+                font-size: 36px;
+            }
+
+            .progress-wrapper { width: 280px; }
+            .loading-star {
+                width: 180px;
+                height: 180px;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .modal-content h2 {
+                font-size: 30px;
+            }
+
+            .modal-content p {
+                font-size: 20px;
+            }
+
+            .modal-close {
+                padding: 12px 40px;
+                font-size: 20px;
+            }
+
+            .tg-link {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+
+            .tg-link .icon {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loading-star">
+            <img src="images/star-load.png" alt="Loading Star">
+        </div>
+                <!-- Полоска загрузки в стиле Brawl Stars -->
+        <div class="progress-wrapper">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-gem"></div>
+                </div>
+            </div>
+        </div>
+        <div class="loading-text">ЗАГРУЗКА...</div>
+    </div>
+
+    <div id="main-screen">
+        <div class="content">
+            <h1>ВСТУПАЙ В НАШ КЛУБ!</h1>
+            <p>В нашем клубе ты сможешь найти себе друзей и даже подружиться с его админом. Также наш клуб старается не пропускать события и мегакопилки.</p>
+        </div>
+        
+        <div class="button-wrapper">
+            <div class="clan-name">Fun_Clan</div>
+            <div class="button-container">
+                <a href="https://link.brawlstars.com/invite/band/en?tag=829CJYCR9&token=gyehy8r2" target="_blank">
+                    <button class="join-button"></button>
+                </a>
+                <button class="info-button" id="infoBtn" title="Информация">?</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <h2>⚡ ИНФОРМАЦИЯ ⚡</h2>
+            
+            <p>
+                <span class="label">🏆 ОСНОВАТЕЛЬ КЛУБА:</span>
+                <span class="value">СВОФОРД</span>
+            </p>
+            
+            <p>
+                <span class="label">💻 СОЗДАТЕЛЬ САЙТА:</span>
+                <span class="value">AM84</span>
+            </p>
+            
+            <div style="margin: 25px 0;">
+                <a href="https://t.me/+U99W0LK8lAZjNjQy" target="_blank" class="tg-link">
+                    <span class="icon">📢</span> НАШ КАНАЛ В TG
+                    <span class="tg-label">Подпишись на новости!</span>
+                </a>
+            </div>
+                        <div style="margin: 20px 0;">
+                <a href="https://t.me/+HyJ6mInMWkBmMzE6" target="_blank" class="tg-link">
+                    <span class="icon">💬</span> НАШ ЧАТИК В TG
+                    <span class="tg-label">Общайся с участниками!</span>
+                </a>
+            </div>
+            
+            <button class="modal-close" id="modalClose">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            const progressBar = document.getElementById('progress-bar');
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainScreen = document.getElementById('main-screen');
+            
+            let width = 0;
+            const duration = 3000; // ⚡ ИЗМЕНЕНО: 3 секунды вместо 5
+            const interval = 30;
+            const steps = duration / interval;
+            const increment = 100 / steps;
+            
+            const timer = setInterval(function() {
+                if (width >= 100) {
+                    clearInterval(timer);
+                    progressBar.classList.add('active'); // Показать гем
+                    setTimeout(function() {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(function() {
+                            loadingScreen.style.display = 'none';
+                            mainScreen.classList.add('active');
+                        }, 500);
+                    }, 300);
+                } else {
+                    width += increment;
+                    progressBar.style.width = width + '%';
+                }
+            }, interval);
+        });
+
+        // Модальное окно
+        const infoBtn = document.getElementById('infoBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        infoBtn.addEventListener('click', function() {
+            modalOverlay.classList.add('active');
+        });
+        modalClose.addEventListener('click', function() {
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+            }
+        });
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                modalOverlay.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>
